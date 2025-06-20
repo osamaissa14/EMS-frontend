@@ -1,0 +1,44 @@
+{
+  "name": "lms-capstone-project-copy",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently \"npm run server:dev\" \"npm run client:dev\"",
+    "start": "npm run server:start",
+    "build": "npm run client:build",
+    "server:dev": "cd server && npm run dev",
+    "server:start": "cd server && npm start",
+    "client:dev": "cd client && npm run dev",
+    "client:build": "cd client && npm run build",
+    "client:preview": "cd client && npm run preview",
+    "install:all": "npm install && cd server && npm install && cd ../client && npm install",
+    "clean": "rm -rf node_modules server/node_modules client/node_modules",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "lms",
+    "learning-management-system",
+    "education",
+    "react",
+    "express",
+    "postgresql"
+  ],
+  "author": "DigiSkills Capstone Team",
+  "license": "ISC",
+  "dependencies": {
+    "concurrently": "^9.1.0"
+  },
+  "description": "This is a full-stack Online Learning Management System (LMS) built as a capstone project for the DigiSkills ICT Upskilling Programme. The system allows students, instructors, and admins to interact in a modern e-learning environment.",
+  "directories": {
+    "doc": "docs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/osamaissa14/lms-capstone-project.git"
+  },
+  "bugs": {
+    "url": "https://github.com/osamaissa14/lms-capstone-project/issues"
+  },
+  "homepage": "https://github.com/osamaissa14/lms-capstone-project#readme",
+  "devDependencies": {}
+}
