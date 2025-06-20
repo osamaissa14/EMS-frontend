@@ -57,7 +57,7 @@ export const useLogin = () => {
     },
    
     onSuccess: (response) => {
-      console.log('Login response:', response);
+
       const payload = response?.data; 
       if (!payload?.tokens?.access || !payload?.user) {
         console.warn('Login response missing user data:', response);
@@ -115,9 +115,11 @@ export const useCourse = (id) => {
 };
 
 export const useEnrolledCourses = () => {
+  const token = localStorage.getItem('accessToken');
   return useQuery({
     queryKey: [...queryKeys.courses, 'enrolled'],
     queryFn: courseAPI.getEnrolledCourses,
+    enabled: !!token, // Only run when authenticated
   });
 };
 
@@ -254,6 +256,14 @@ export const useLessons = (moduleId) => {
     queryKey: [...queryKeys.lessons, moduleId],
     queryFn: () => lessonAPI.getLessons(moduleId),
     enabled: !!moduleId,
+  });
+};
+
+export const useLessonsByCourse = (courseId) => {
+  return useQuery({
+    queryKey: [...queryKeys.lessons, 'course', courseId],
+    queryFn: () => lessonAPI.getLessonsByCourse(courseId),
+    enabled: !!courseId,
   });
 };
 

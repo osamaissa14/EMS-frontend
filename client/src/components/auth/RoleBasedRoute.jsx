@@ -7,13 +7,11 @@ const RoleBasedRoute = ({ allowedRoles }) => {
   const { user, isLoading } = useAuth();
   const location = useLocation();
 
-  console.log("RoleBasedRoute", { user, allowedRoles });
-
   if (isLoading) {
     return <LoadingSpinner fullScreen />;
   };
+  // Check if user is authenticated
   if (!user) {
-    console.log("No user found in context");
     return <Navigate to="/login" state={{ from: location }} replace />;
   };
   if (!allowedRoles.includes(user?.role)) {

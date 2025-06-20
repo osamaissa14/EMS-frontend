@@ -29,18 +29,18 @@ import {
   Clock,
   BookOpen,
 } from "lucide-react";
-import { useCourse, useLessons, useAssignments } from "@/hooks/useApi";
+import { useCourse, useLessonsByCourse, useAssignments } from "@/hooks/useApi";
 
 const CoursePlayer = () => {
   const { id: courseId } = useParams();
   
-  const { data: courseData, isLoading: courseLoading } = useCourse(courseId);
-  const { data: lessonsData, isLoading: lessonsLoading } = useLessons(courseId);
-  const { data: assignmentsData, isLoading: assignmentsLoading } = useAssignments(courseId);
+  const { data: courseData, isLoading: courseLoading, error: courseError } = useCourse(courseId);
+  const { data: lessonsData, isLoading: lessonsLoading, error: lessonsError } = useLessonsByCourse(courseId);
+  const { data: assignmentsData, isLoading: assignmentsLoading, error: assignmentsError } = useAssignments(courseId);
 
   const course = courseData?.data || {};
-  const lessons = lessonsData?.data || [];
-  const assignments = assignmentsData?.data || [];
+  const lessons = Array.isArray(lessonsData?.data) ? lessonsData.data : [];
+  const assignments = Array.isArray(assignmentsData?.data) ? assignmentsData.data : [];
 
   // Calculate progress based on completed lessons
   const completedLessons = lessons.filter(lesson => lesson.completed).length;
@@ -59,6 +59,23 @@ const CoursePlayer = () => {
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
             <p className="text-muted-foreground">Loading course...</p>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
+  // Handle errors
+  if (courseError) {
+    return (
+      <Layout>
+        <div className="flex items-center justify-center py-12">
+          <div className="text-center">
+            <h2 className="text-2xl font-bold text-destructive mb-2">Course Not Found</h2>
+            <p className="text-muted-foreground mb-4">
+              The course you're looking for doesn't exist or you don't have access to it.
+            </p>
+            <Button onClick={() => window.history.back()}>Go Back</Button>
           </div>
         </div>
       </Layout>

@@ -13,8 +13,7 @@ const OAuthSuccess = () => {
   useEffect(() => {
     const handleOAuthSuccess = async () => {
       try {
-        console.log('OAuthSuccess: Starting token extraction');
-        console.log('All cookies:', document.cookie);
+
         
         // Extract tokens from cookies
         const extractTokenFromCookie = (cookieName) => {
@@ -31,10 +30,7 @@ const OAuthSuccess = () => {
         const accessToken = extractTokenFromCookie('clientAccessToken');
         const refreshToken = extractTokenFromCookie('clientRefreshToken');
         
-        console.log('Extracted tokens:', { accessToken: !!accessToken, refreshToken: !!refreshToken });
-
         if (accessToken && refreshToken) {
-          console.log('Storing tokens in localStorage');
           // Store tokens in localStorage for client-side authentication
           localStorage.setItem('accessToken', accessToken);
           localStorage.setItem('refreshToken', refreshToken);
@@ -54,7 +50,7 @@ const OAuthSuccess = () => {
           
         
           // Automatically navigate to student dashboard
-          console.log('OAuth success completed - tokens stored');
+
           
           // Small delay to ensure AuthContext updates before navigation
           setTimeout(() => {

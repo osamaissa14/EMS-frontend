@@ -37,26 +37,14 @@ const AdminPanel = () => {
   const { data: usersData, isLoading: usersLoading } = useUsers();
   const { data: coursesData, isLoading: coursesLoading } = useCourses();
   
-  // Debug logging
-  console.log('Admin Panel - Current user:', user);
-  console.log('Admin Panel - User role:', user?.role);
-  console.log('Admin Panel - User ID:', user?.id);
+
   
   // Only fetch pending courses if user is admin and authenticated
   const { data: pendingCoursesData, isLoading: pendingLoading, error: pendingError } = usePendingCourses({
     enabled: user?.role === 'admin' && !!user?.id
   });
   
-  // Debug logging for pending courses
-  console.log('Admin Panel - Pending courses enabled:', user?.role === 'admin' && !!user?.id);
-  console.log('Admin Panel - Pending courses data:', pendingCoursesData);
-  console.log('Admin Panel - Pending courses error:', pendingError);
-  
-  // Debug the actual response structure
-  if (pendingCoursesData) {
-    console.log('Admin Panel - Response data keys:', Object.keys(pendingCoursesData.data || {}));
-    console.log('Admin Panel - Full response data:', pendingCoursesData.data);
-  }
+
   
   const approveCourse = useApproveCourse();
 
@@ -67,15 +55,8 @@ const AdminPanel = () => {
   
   // Ensure pendingCourses is always an array
   if (!Array.isArray(pendingCourses)) {
-    console.log('Admin Panel - pendingCourses is not an array, converting:', pendingCourses);
     pendingCourses = [];
   }
-
-  // Debug logging for extracted data
-  console.log('Admin Panel - Extracted pending courses:', pendingCourses);
-  console.log('Admin Panel - Pending courses length:', pendingCourses.length);
-  console.log('Admin Panel - Pending courses type:', typeof pendingCourses);
-  console.log('Admin Panel - Is array:', Array.isArray(pendingCourses));
 
   // Calculate dynamic stats
   const instructors = users.filter(user => user.role === 'instructor');

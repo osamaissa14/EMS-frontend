@@ -1,7 +1,8 @@
+
 import React, { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { useParams, useNavigate } from 'react-router-dom';
-import { courseAPI, moduleAPI, lessonAPI, fileAPI } from '@/lib/api';
+import { courseAPI, moduleAPI, lessonAPI, fileAPI, assignmentAPI } from '@/lib/api';
 import FileUploadComponent from '@/components/FileUpload/FileUploadComponent';
 import {
   Card,
@@ -51,9 +52,12 @@ const CourseContentManager = () => {
   const [loading, setLoading] = useState(true);
   const [isAddingModule, setIsAddingModule] = useState(false);
   const [isAddingLesson, setIsAddingLesson] = useState(false);
+  const [isAddingAssignment, setIsAddingAssignment] = useState(false);
   const [selectedModuleId, setSelectedModuleId] = useState(null);
+  const [selectedLessonId, setSelectedLessonId] = useState(null);
   const [editingModule, setEditingModule] = useState(null);
   const [editingLesson, setEditingLesson] = useState(null);
+  const [editingAssignment, setEditingAssignment] = useState(null);
 
   // Form states
   const [moduleForm, setModuleForm] = useState({
@@ -69,6 +73,17 @@ const CourseContentManager = () => {
     duration: '',
     is_free: false,
     attachments: []
+  });
+
+  const [assignmentForm, setAssignmentForm] = useState({
+    title: '',
+    description: '',
+    due_date: '',
+    points: 100,
+    is_published: false,
+    submission_type: 'text',
+    file_types_allowed: null,
+    max_file_size: null
   });
 
   // Fetch course and modules
@@ -219,6 +234,84 @@ const CourseContentManager = () => {
     } catch (error) {
       console.error('Error deleting lesson:', error);
       toast.error('Failed to delete lesson');
+    }
+  };
+
+  // Assignment handlers
+  const handleCreateAssignment = async () => {
+    try {
+      const assignmentData = {
+        ...assignmentForm,
+        lesson_id: selectedLessonId,
+        due_date: assignmentForm.due_date || null // Convert empty string to null
+      };
+
+      const response = await assignmentAPI.createAssignment(assignmentData);
+      if (response.data.success) {
+        toast.success('Assignment created successfully');
+        // Refresh modules to get updated assignments
+        fetchCourseData();
+        setAssignmentForm({
+          title: '',
+          description: '',
+          due_date: '',
+          points: 100,
+          is_published: false,
+          submission_type: 'text',
+          file_types_allowed: null,
+          max_file_size: null
+        });
+        setIsAddingAssignment(false);
+        setSelectedLessonId(null);
+      }
+    } catch (error) {
+      console.error('Error creating assignment:', error);
+      toast.error('Failed to create assignment');
+    }
+  };
+
+  const handleUpdateAssignment = async () => {
+    try {
+      const assignmentData = {
+        ...assignmentForm,
+        due_date: assignmentForm.due_date || null // Convert empty string to null
+      };
+      const response = await assignmentAPI.updateAssignment(editingAssignment.id, assignmentData);
+      if (response.data.success) {
+        toast.success('Assignment updated successfully');
+        fetchCourseData();
+        setEditingAssignment(null);
+        setAssignmentForm({
+          title: '',
+          description: '',
+          due_date: '',
+          points: 100,
+          is_published: false,
+          submission_type: 'text',
+          file_types_allowed: null,
+          max_file_size: null
+        });
+      }
+    } catch (error) {
+      console.error('Error updating assignment:', error);
+      toast.error('Failed to update assignment');
+    }
+  };
+
+  const handleDeleteAssignment = async (assignmentId) => {
+    if (!confirm('Are you sure you want to delete this assignment?')) {
+      return;
+    }
+
+    try {
+      const response = await assignmentAPI.deleteAssignment(assignmentId);
+      if (response.data.success) {
+        toast.success('Assignment deleted successfully');
+        fetchCourseData();
+      }
+    } catch (error) {
+      console.error('Error deleting assignment:', error);
+      toast.error('Failed to delete assignment');
     }
   };
 
@@ -531,6 +624,108 @@ const CourseContentManager = () => {
                           </div>
                         )}
                       </div>
+                      
+                      {/* Assignments */}
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <h4 className="font-medium">Assignments</h4>
+                          {module.lessons && module.lessons.length > 0 ? (
+                            <select
+                              onChange={(e) => {
+                                if (e.target.value) {
+                                  setSelectedLessonId(parseInt(e.target.value));
+                                  setIsAddingAssignment(true);
+                                  e.target.value = ''; // Reset select
+                                }
+                              }}
+                              className="text-sm p-2 border rounded-md bg-background text-foreground hover:bg-accent focus:bg-accent focus:outline-none focus:ring-2 focus:ring-ring"
+                            >
+                              <option value="">Add Assignment to Lesson...</option>
+                              {module.lessons.map(lesson => (
+                                <option key={lesson.id} value={lesson.id}>
+                                  {lesson.title}
+                                </option>
+                              ))}
+                            </select>
+                          ) : (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              disabled
+                              title="Create lessons first to add assignments"
+                            >
+                              <Plus className="h-4 w-4 mr-2" />
+                              Add Assignment
+                            </Button>
+                          )}
+                        </div>
+                        
+                        {module.assignments && module.assignments.length > 0 ? (
+                          <div className="space-y-2">
+                            {module.assignments.map((assignment, assignmentIndex) => (
+                              <div key={assignment.id} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border">
+                                <div className="flex items-center space-x-3">
+                                  <div className="bg-orange-100 p-1.5 rounded">
+                                    <FileText className="h-4 w-4 text-orange-600" />
+                                  </div>
+                                  <div>
+                                    <p className="font-medium">{assignment.title}</p>
+                                    <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                                      {assignment.due_date && (
+                                        <span className="flex items-center">
+                                          <Clock className="h-3 w-3 mr-1" />
+                                          Due: {new Date(assignment.due_date).toLocaleDateString()}
+                                        </span>
+                                      )}
+                                      <span className="bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-xs">
+                                        {assignment.points} pts
+                                      </span>
+                                      {assignment.is_published && (
+                                        <span className="bg-green-100 text-green-800 px-2 py-0.5 rounded text-xs">
+                                          Published
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => {
+                                      setEditingAssignment(assignment);
+                                      setAssignmentForm({
+                                        title: assignment.title,
+                                        description: assignment.description || '',
+                                        due_date: assignment.due_date || '',
+                                        points: assignment.points || 100,
+                                        is_published: assignment.is_published || false,
+                                        submission_type: assignment.submission_type || 'text',
+                                        file_types_allowed: assignment.file_types_allowed || null,
+                                        max_file_size: assignment.max_file_size || null
+                                      });
+                                    }}
+                                  >
+                                    <Edit className="h-4 w-4" />
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handleDeleteAssignment(assignment.id)}
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="text-center py-4 text-muted-foreground">
+                            <FileText className="h-6 w-6 mx-auto mb-2 opacity-50" />
+                            <p className="text-sm">No assignments in this module yet</p>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </AccordionContent>
                 </AccordionItem>
@@ -716,6 +911,122 @@ const CourseContentManager = () => {
               >
                 <Save className="h-4 w-4 mr-2" />
                 {editingLesson ? 'Update Lesson' : 'Create Lesson'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add/Edit Assignment Dialog */}
+      <Dialog open={isAddingAssignment || !!editingAssignment} onOpenChange={() => {
+        setIsAddingAssignment(false);
+        setEditingAssignment(null);
+        setSelectedModuleId(null);
+        setSelectedLessonId(null);
+        setAssignmentForm({
+          title: '',
+          description: '',
+          due_date: '',
+          points: 100,
+          is_published: false,
+          submission_type: 'text',
+          file_types_allowed: null,
+          max_file_size: null
+        });
+      }}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{editingAssignment ? 'Edit Assignment' : 'Add New Assignment'}</DialogTitle>
+            <DialogDescription>
+              {editingAssignment ? 'Update assignment information' : 'Create a new assignment for students'}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="assignment-title">Assignment Title</Label>
+                <Input
+                  id="assignment-title"
+                  value={assignmentForm.title}
+                  onChange={(e) => setAssignmentForm(prev => ({ ...prev, title: e.target.value }))}
+                  placeholder="Enter assignment title"
+                />
+              </div>
+              <div>
+                <Label htmlFor="assignment-points">Points</Label>
+                <Input
+                  id="assignment-points"
+                  type="number"
+                  value={assignmentForm.points}
+                  onChange={(e) => setAssignmentForm(prev => ({ ...prev, points: parseInt(e.target.value) || 100 }))}
+                  placeholder="100"
+                  min="1"
+                />
+              </div>
+            </div>
+            
+            <div>
+              <Label htmlFor="assignment-description">Assignment Description</Label>
+              <Textarea
+                id="assignment-description"
+                value={assignmentForm.description}
+                onChange={(e) => setAssignmentForm(prev => ({ ...prev, description: e.target.value }))}
+                placeholder="Enter assignment instructions and requirements"
+                rows={4}
+              />
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="assignment-due-date">Due Date (optional)</Label>
+                <Input
+                  id="assignment-due-date"
+                  type="datetime-local"
+                  value={assignmentForm.due_date}
+                  onChange={(e) => setAssignmentForm(prev => ({ ...prev, due_date: e.target.value }))}
+                />
+              </div>
+              <div>
+                <Label htmlFor="assignment-submission-type">Submission Type</Label>
+                <select
+                  id="assignment-submission-type"
+                  value={assignmentForm.submission_type}
+                  onChange={(e) => setAssignmentForm(prev => ({ ...prev, submission_type: e.target.value }))}
+                  className="w-full p-2 border border-gray-300 rounded-md"
+                >
+                  <option value="text">Text Submission</option>
+                  <option value="file">File Upload</option>
+                  <option value="both">Text + File</option>
+                </select>
+              </div>
+            </div>
+            
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id="assignment-published"
+                checked={assignmentForm.is_published}
+                onChange={(e) => setAssignmentForm(prev => ({ ...prev, is_published: e.target.checked }))}
+                className="rounded"
+              />
+              <Label htmlFor="assignment-published">Publish assignment immediately</Label>
+            </div>
+            
+            <div className="flex justify-end space-x-2">
+              <Button variant="outline" onClick={() => {
+                setIsAddingAssignment(false);
+                setEditingAssignment(null);
+                setSelectedModuleId(null);
+                setSelectedLessonId(null);
+              }}>
+                Cancel
+              </Button>
+              <Button 
+                onClick={editingAssignment ? handleUpdateAssignment : handleCreateAssignment} 
+                disabled={!assignmentForm.title.trim()}
+              >
+                <Save className="h-4 w-4 mr-2" />
+                {editingAssignment ? 'Update Assignment' : 'Create Assignment'}
               </Button>
             </div>
           </div>
