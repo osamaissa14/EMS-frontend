@@ -23,7 +23,7 @@ const FileUploadExample = () => {
 
   // Handle file upload success
   const handleUploadSuccess = (uploadResult) => {
-    console.log('Upload successful:', uploadResult);
+    
     
     if (uploadResult.files) {
       // Multiple files

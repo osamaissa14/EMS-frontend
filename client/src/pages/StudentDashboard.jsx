@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+
+
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '@/components/Layout';
 import {
@@ -35,18 +37,39 @@ const StudentDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
 
   // Fetch student data using hooks
-  const { data: enrolledCoursesData, isLoading: coursesLoading } = useEnrolledCourses();
+  const { data: enrolledCoursesData, isLoading: coursesLoading, error: coursesError } = useEnrolledCourses();
   const { data: assignmentsData, isLoading: assignmentsLoading } = useAssignments({ status: 'pending' });
   const { data: notificationsData, isLoading: notificationsLoading } = useNotifications();
 
-  const enrolledCourses = Array.isArray(enrolledCoursesData?.data) ? enrolledCoursesData.data : Array.isArray(enrolledCoursesData) ? enrolledCoursesData : [];
-  const pendingAssignments = Array.isArray(assignmentsData?.data) ? assignmentsData.data : Array.isArray(assignmentsData) ? assignmentsData : [];
-  const notifications = Array.isArray(notificationsData?.data) ? notificationsData.data : Array.isArray(notificationsData) ? notificationsData : [];
+
+
+  const enrolledCourses = Array.isArray(enrolledCoursesData?.data?.data) ? enrolledCoursesData.data.data : Array.isArray(enrolledCoursesData?.data) ? enrolledCoursesData.data : Array.isArray(enrolledCoursesData) ? enrolledCoursesData : [];
+  const pendingAssignments = Array.isArray(assignmentsData?.data?.data) ? assignmentsData.data.data : Array.isArray(assignmentsData?.data) ? assignmentsData.data : Array.isArray(assignmentsData) ? assignmentsData : [];
+  const notifications = Array.isArray(notificationsData?.data?.data) ? notificationsData.data.data : Array.isArray(notificationsData?.data) ? notificationsData.data : Array.isArray(notificationsData) ? notificationsData : [];
+
+
 
   // Calculate overall progress
   const totalCourses = enrolledCourses.length;
   const completedCourses = enrolledCourses.filter(course => course.progress === 100).length;
   const overallProgress = totalCourses > 0 ? Math.round((completedCourses / totalCourses) * 100) : 0;
+
+  // Show error state if there's an error fetching courses
+  if (coursesError) {
+    return (
+      <Layout>
+        <div className="container mx-auto px-4 py-8">
+          <div className="text-center">
+            <h2 className="text-2xl font-bold text-red-600 mb-4">Error Loading Courses</h2>
+            <p className="text-muted-foreground mb-4">
+              {coursesError?.response?.data?.message || coursesError?.message || 'Failed to load enrolled courses'}
+            </p>
+            <Button onClick={() => window.location.reload()}>Retry</Button>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
 
   if (coursesLoading || assignmentsLoading || notificationsLoading) {
     return <LoadingSpinner fullScreen />;

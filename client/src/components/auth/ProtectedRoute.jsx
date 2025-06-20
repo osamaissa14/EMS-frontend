@@ -11,7 +11,7 @@ const ProtectedRoute = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  console.log("ProtectedRoute", { isAuthenticated, isLoading });
+
 
   if (isLoading) {
     return <LoadingSpinner fullScreen />;

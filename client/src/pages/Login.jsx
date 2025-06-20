@@ -96,7 +96,7 @@ const Login = () => {
       }
 
       // Role-based redirection
-      console.log("User role after login:", response.data.user.role);
+      
 
       const redirectPaths = {
         admin: "/admin/users",

@@ -44,13 +44,8 @@ const Dashboard = () => {
   const { data: assignments } = useAssignments();
 
   useEffect(() => {
-    console.log('Dashboard - user data:', user);
-    console.log('Dashboard - user role:', user?.role);
     if (user?.role) {
       setUserRole(user.role);
-      console.log('Dashboard - userRole set to:', user.role);
-    } else {
-      console.log('Dashboard - no user role found, user:', user);
     }
   }, [user]);
 
