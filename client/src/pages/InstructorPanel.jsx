@@ -53,32 +53,32 @@ const InstructorPanel = () => {
       
       // Fetch current user
         const userResponse = await authAPI.getProfile();
-        if (userResponse.data.success) {
-          setUser(userResponse.data.data);
+        if (userResponse.success) {
+          setUser(userResponse.data);
         }
 
       // Fetch instructor courses
         const coursesResponse = await courseAPI.getInstructorCourses();
-        if (coursesResponse.data.success) {
-           setCourses(coursesResponse.data.data || []);
+        if (coursesResponse.success) {
+           setCourses(coursesResponse.data || []);
          }
 
         // Fetch instructor analytics
         const analyticsResponse = await api.get('/instructor/analytics');
-        if (analyticsResponse.data.success) {
-          setAnalytics(analyticsResponse.data.data || analytics);
+        if (analyticsResponse.success) {
+          setAnalytics(analyticsResponse.data || analytics);
         }
 
         // Fetch recent activity
         const activityResponse = await api.get('/instructor/activity');
-        if (activityResponse.data.success) {
-          setRecentActivity(activityResponse.data.data || []);
+        if (activityResponse.success) {
+          setRecentActivity(activityResponse.data || []);
         }
 
         // Fetch pending tasks
         const tasksResponse = await api.get('/instructor/tasks');
-        if (tasksResponse.data.success) {
-          setPendingTasks(tasksResponse.data.data || []);
+        if (tasksResponse.success) {
+          setPendingTasks(tasksResponse.data || []);
         }
 
     } catch (error) {
@@ -128,53 +128,56 @@ const InstructorPanel = () => {
 
         {/* Analytics Overview */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Total Students
-              </CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {analytics.totalStudents}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                +12% from last month
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Total Revenue
-              </CardTitle>
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                ${analytics.totalRevenue}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                +18% from last month
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Published Courses
-              </CardTitle>
-              <BookOpen className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {analytics.coursesPublished}
-              </div>
-              <p className="text-xs text-muted-foreground">1 in draft</p>
-            </CardContent>
-          </Card>
+          {[
+            {
+              id: 'total-students',
+              title: 'Total Students',
+              value: analytics.totalStudents,
+              change: '+12% from last month',
+              icon: Users
+            },
+            {
+              id: 'total-revenue',
+              title: 'Total Revenue',
+              value: `$${analytics.totalRevenue}`,
+              change: '+18% from last month',
+              icon: DollarSign
+            },
+            {
+              id: 'published-courses',
+              title: 'Published Courses',
+              value: analytics.coursesPublished,
+              change: '1 in draft',
+              icon: BookOpen
+            },
+            {
+              id: 'average-rating',
+              title: 'Average Rating',
+              value: '4.8',
+              change: '+0.2 from last month',
+              icon: Star
+            }
+          ].map((metric) => {
+            const IconComponent = metric.icon;
+            return (
+              <Card key={metric.id}>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">
+                    {metric.title}
+                  </CardTitle>
+                  <IconComponent className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">
+                    {metric.value}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {metric.change}
+                  </p>
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
 
         <Tabs defaultValue="courses" className="space-y-6">
@@ -211,14 +214,6 @@ const InstructorPanel = () => {
                             <div className="flex items-center gap-1">
                               <Users className="h-4 w-4" />
                               {course.enrollments || course.students || 0} students
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                              N/A
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <DollarSign className="h-4 w-4" />
-                              Free
                             </div>
                             <div className="flex items-center gap-1">
                               <Calendar className="h-4 w-4" />
@@ -388,15 +383,13 @@ const InstructorPanel = () => {
                     recentActivity.map((activity) => (
                       <div key={activity.id} className="flex space-x-3">
                         <div className="rounded-full p-2 bg-primary/10 text-primary">
-                          {activity.type === "enrollment" && (
+                          {activity.type === "enrollment" ? (
                             <Users className="h-4 w-4" />
-                          )}
-                          {activity.type === "review" && (
+                          ) : activity.type === "review" ? (
                             <Star className="h-4 w-4" />
-                          )}
-                          {activity.type === "question" && (
+                          ) : activity.type === "question" ? (
                             <FileText className="h-4 w-4" />
-                          )}
+                          ) : null}
                         </div>
                         <div className="flex-1 space-y-1">
                           <p className="text-sm">{activity.message}</p>

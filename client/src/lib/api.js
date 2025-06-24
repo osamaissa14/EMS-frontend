@@ -13,10 +13,15 @@ const api = axios.create({
 // Request interceptor to add auth token
 api.interceptors.request.use(
   (config) => {
-    // Use consistent token key
-    const token = localStorage.getItem('accessToken');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    // Don't add token to login/register requests
+    const isAuthRequest = config.url?.includes('/auth/login') || config.url?.includes('/auth/register');
+    
+    if (!isAuthRequest) {
+      // Use consistent token key
+      const token = localStorage.getItem('accessToken');
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
     }
     return config;
   },
@@ -28,7 +33,7 @@ api.interceptors.request.use(
 // Response interceptor to handle errors globally
 api.interceptors.response.use(
   (response) => {
-    return response;
+    return response.data;
   },
   async (error) => {
     if (error.response?.status === 401) {
@@ -74,6 +79,7 @@ export const userAPI = {
   getUsers: (params) => api.get('/users', { params }),
   getUser: (id) => api.get(`/users/${id}`),
   updateUser: (id, data) => api.put(`/users/${id}`, data),
+  updateUserRole: (userId, role) => api.put(`/users/${userId}/role`, { role }),
   deleteUser: (id) => api.delete(`/users/${id}`),
   updateProfile: (data) => api.put('/users/profile', data),
 };
@@ -81,6 +87,7 @@ export const userAPI = {
 // Course API endpoints
 export const courseAPI = {
   getCourses: (params) => api.get('/courses', { params }),
+  getApprovedCourses: (params) => api.get('/courses/approved', { params }),
   getCourse: (id) => api.get(`/courses/${id}`),
   createCourse: (data) => api.post('/courses', data),
   updateCourse: (id, data) => api.put(`/courses/${id}`, data),
@@ -127,22 +134,49 @@ export const enrollmentAPI = {
 export const quizAPI = {
   getQuizzes: (params) => api.get('/quizzes', { params }),
   getQuiz: (id) => api.get(`/quizzes/${id}`),
+  getQuizzesByLesson: (lessonId) => api.get(`/quizzes/lesson/${lessonId}`),
+  getQuizzesByCourse: (courseId) => api.get(`/quizzes/course/${courseId}`),
   createQuiz: (data) => api.post('/quizzes', data),
   updateQuiz: (id, data) => api.put(`/quizzes/${id}`, data),
   deleteQuiz: (id) => api.delete(`/quizzes/${id}`),
-  submitQuiz: (id, answers) => api.post(`/quizzes/${id}/submit`, { answers }),
-  getQuizResults: (id) => api.get(`/quizzes/${id}/results`),
+  publishQuiz: (id) => api.put(`/quizzes/${id}/publish`),
+  unpublishQuiz: (id) => api.put(`/quizzes/${id}/unpublish`),
+  
+  // Question management
+  addQuestion: (quizId, data) => api.post(`/quizzes/${quizId}/questions`, data),
+  updateQuestion: (questionId, data) => api.put(`/quizzes/questions/${questionId}`, data),
+  deleteQuestion: (questionId) => api.delete(`/quizzes/questions/${questionId}`),
+  
+  // Quiz attempts
+  submitQuiz: (id, data) => api.post(`/quizzes/${id}/attempts`, data),
+  getQuizAttempts: (quizId) => api.get(`/quizzes/${quizId}/attempts`),
+  getUserQuizAttempts: (userId) => api.get(`/quizzes/attempts/user/${userId}`),
+  getQuizStatistics: (quizId) => api.get(`/quizzes/${quizId}/statistics`),
 };
 
 // Assignment API endpoints
 export const assignmentAPI = {
   getAssignments: (params) => api.get('/assignments', { params }),
   getAssignment: (id) => api.get(`/assignments/${id}`),
+  getAssignmentsByLesson: (lessonId) => api.get(`/assignments/lesson/${lessonId}`),
+  getAssignmentsByCourse: (courseId) => api.get(`/assignments/course/${courseId}`),
   createAssignment: (data) => api.post('/assignments', data),
   updateAssignment: (id, data) => api.put(`/assignments/${id}`, data),
   deleteAssignment: (id) => api.delete(`/assignments/${id}`),
-  submitAssignment: (id, data) => api.post(`/assignments/${id}/submit`, data),
-  gradeAssignment: (id, grade) => api.post(`/assignments/${id}/grade`, { grade }),
+  publishAssignment: (id) => api.put(`/assignments/${id}/publish`),
+  unpublishAssignment: (id) => api.put(`/assignments/${id}/unpublish`),
+  
+  // Assignment submissions
+  submitAssignment: (assignmentId, data) => api.post(`/assignments/${assignmentId}/submit`, data),
+  getSubmissions: (assignmentId) => api.get(`/assignments/${assignmentId}/submissions`),
+  getUserSubmissions: (userId) => api.get(`/assignments/submissions/user/${userId}`),
+  gradeSubmission: (submissionId, data) => api.put(`/assignments/submissions/${submissionId}/grade`, data),
+  
+  // Assignment management
+  getAssignmentsDueSoon: () => api.get('/assignments/due-soon'),
+  getOverdueAssignments: () => api.get('/assignments/overdue'),
+  getPendingSubmissions: (courseId) => api.get(`/assignments/course/${courseId}/pending-submissions`),
+  getAssignmentStatistics: (assignmentId) => api.get(`/assignments/${assignmentId}/statistics`),
 };
 
 // Notification API endpoints

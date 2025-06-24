@@ -9,7 +9,6 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
-  GraduationCap,
   BookOpen,
   Users,
   Award,
@@ -34,7 +33,6 @@ const Home = () => {
     { number: "1000+", label: "Students" }, // Static number since user count requires admin access
     { number: `${courses.length}+`, label: "Courses" },
     { number: "95%", label: "Completion Rate" }, // This would need a separate API
-
   ];
 
   const features = [
@@ -82,8 +80,8 @@ const Home = () => {
       name: "Sarah Johnson",
       role: "Software Engineer",
       content:
-        "EduLearn transformed my career. The React course helped me land my dream job!",
-  
+        "EDUNOVA transformed my career. The React course helped me land my dream job!",
+
       avatar: "👩‍💻",
     },
     {
@@ -91,7 +89,7 @@ const Home = () => {
       role: "Product Manager",
       content:
         "The business courses are practical and immediately applicable. Highly recommended!",
-  
+
       avatar: "👨‍💼",
     },
     {
@@ -99,7 +97,7 @@ const Home = () => {
       role: "UX Designer",
       content:
         "Amazing platform with world-class instructors. The UI/UX track is exceptional.",
-  
+
       avatar: "👩‍🎨",
     },
   ];
@@ -112,12 +110,10 @@ const Home = () => {
       <nav className="sticky top-0 z-50 border-b bg-slate-900/95 backdrop-blur supports-[backdrop-filter]:bg-slate-900/60">
         <div className="container flex h-16 items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-              <GraduationCap className="h-5 w-5" />
+            <div className="flex h-12 w-12 items-center justify-center rounded-lg text-white">
+              <img src="/logo.png" alt="EDUNOVA Logo" className="h-12 w-12" />
             </div>
-            <span className="text-xl font-bold bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
-              EduLearn
-            </span>
+            <span className="text-xl font-bold text-amber-500">EDUNOVA</span>
           </div>
           <div className="flex items-center gap-4">
             <Link
@@ -137,6 +133,14 @@ const Home = () => {
       <section className="relative py-20 lg:py-32">
         <div className="container">
           <div className="mx-auto max-w-4xl text-center">
+            <div className="flex items-center justify-center">
+              <div className="flex h-50 w-50 items-center justify-center rounded-lg">
+                <img src="/logo.png" alt="EDUNOVA Logo" className="h-20 w-20" />
+              </div>
+            </div>
+            <div className="flex items-center justify-center gap-3 mb-8">
+              <span className="text-3xl font-bold text-amber-500">EDUNOVA</span>
+            </div>
             <Badge className="mb-4 bg-primary/10 text-primary border-primary/20">
               🚀 Welcome to the Future of Learning
             </Badge>
@@ -185,7 +189,7 @@ const Home = () => {
       <section className="py-20 bg-slate-800/50">
         <div className="container">
           <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold mb-4">Why Choose EduLearn?</h2>
+            <h2 className="text-3xl font-bold mb-4">Why Choose EDUNOVA?</h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
               Our platform combines cutting-edge technology with proven
               educational methods to deliver an unmatched learning experience.
@@ -224,7 +228,7 @@ const Home = () => {
             <h2 className="text-3xl font-bold mb-4">What Our Students Say</h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
               Join thousands of successful learners who have transformed their
-              careers with EduLearn.
+              careers with EDUNOVA.
             </p>
           </div>
           <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
@@ -268,7 +272,7 @@ const Home = () => {
               Ready to Start Your Learning Journey?
             </h2>
             <p className="text-muted-foreground mb-8">
-              Join EduLearn today and unlock your potential with our
+              Join EDUNOVA today and unlock your potential with our
               comprehensive courses, expert instructors, and supportive
               community.
             </p>
@@ -293,10 +297,10 @@ const Home = () => {
           <div className="grid md:grid-cols-4 gap-8">
             <div className="space-y-4">
               <div className="flex items-center gap-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                  <GraduationCap className="h-5 w-5" />
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-500 text-white">
+                  <img src="/logo.png" alt="EDUNOVA Logo" className="h-6 w-6" />
                 </div>
-                <span className="text-lg font-bold">EduLearn</span>
+                <span className="text-lg font-bold">EDUNOVA</span>
               </div>
               <p className="text-sm text-muted-foreground">
                 Empowering learners worldwide with cutting-edge educational
@@ -416,7 +420,7 @@ const Home = () => {
             </div>
           </div>
           <div className="border-t mt-8 pt-8 text-center text-sm text-muted-foreground">
-            <p>&copy; 2024 EduLearn. All rights reserved.</p>
+            <p>&copy; 2024 EDUNOVA. All rights reserved.</p>
           </div>
         </div>
       </footer>

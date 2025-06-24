@@ -47,6 +47,36 @@ export const useUser = (id) => {
   });
 };
 
+export const useUpdateUserRole = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: ({ userId, role }) => userAPI.updateUserRole(userId, role),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.users });
+      toast.success('User role updated successfully!');
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.message || 'Failed to update user role');
+    },
+  });
+};
+
+export const useDeleteUser = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: (userId) => userAPI.deleteUser(userId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.users });
+      toast.success('User deleted successfully!');
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.message || 'Failed to delete user');
+    },
+  });
+};
+
 export const useLogin = () => {
   const queryClient = useQueryClient();
 
@@ -58,16 +88,15 @@ export const useLogin = () => {
    
     onSuccess: (response) => {
 
-      const payload = response?.data; 
-      if (!payload?.tokens?.access || !payload?.user) {
+      if (!response?.tokens?.access || !response?.user) {
         console.warn('Login response missing user data:', response);
         return;
       }
       
-      localStorage.setItem("accessToken", payload.tokens.access);
-      localStorage.setItem("refreshToken", payload.tokens.refresh);
+      localStorage.setItem("accessToken", response.tokens.access);
+      localStorage.setItem("refreshToken", response.tokens.refresh);
     
-      queryClient.setQueryData(queryKeys.auth, payload.user);
+      queryClient.setQueryData(queryKeys.auth, response.user);
     
       toast.success("Login successful!");
     },
@@ -102,6 +131,14 @@ export const useCourses = (params = {}) => {
   return useQuery({
     queryKey: [...queryKeys.courses, params],
     queryFn: () => courseAPI.getCourses(params),
+    staleTime: 2 * 60 * 1000, // 2 minutes
+  });
+};
+
+export const useApprovedCourses = (params = {}) => {
+  return useQuery({
+    queryKey: [...queryKeys.courses, 'approved', params],
+    queryFn: () => courseAPI.getApprovedCourses(params),
     staleTime: 2 * 60 * 1000, // 2 minutes
   });
 };
@@ -176,6 +213,7 @@ export const useEnrollCourse = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.enrollments });
       queryClient.invalidateQueries({ queryKey: [...queryKeys.courses, 'enrolled'] });
+      queryClient.invalidateQueries({ queryKey: [...queryKeys.courses, 'approved'] });
       toast.success('Successfully enrolled in course!');
     },
     onError: (error) => {
@@ -321,9 +359,17 @@ export const useSubmitQuiz = () => {
 
 // Assignment hooks
 export const useAssignments = (params = {}) => {
+  const { courseId, ...otherParams } = params;
+  
   return useQuery({
     queryKey: [...queryKeys.assignments, params],
-    queryFn: () => assignmentAPI.getAssignments(params),
+    queryFn: () => {
+      if (courseId) {
+        return assignmentAPI.getAssignmentsByCourse(courseId);
+      }
+      return assignmentAPI.getAssignments(otherParams);
+    },
+    enabled: courseId ? !!courseId : true,
   });
 };
 

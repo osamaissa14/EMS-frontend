@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { GraduationCap, Mail, Lock, Eye, EyeOff, User, Chrome } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, User, Chrome } from "lucide-react";
 import { toast } from "sonner";
 
 const Signup = () => {
@@ -168,13 +168,13 @@ const Signup = () => {
         {/* Logo and Header */}
         <div className="text-center space-y-4">
           <div className="flex justify-center">
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg">
-              <GraduationCap className="h-8 w-8" aria-hidden="true" />
+            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-500 text-white shadow-lg">
+              <img src="/logo.png" alt="EDUNOVA Logo" className="h-12 w-12" />
             </div>
           </div>
           <div className="space-y-2">
             <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
-              Join EduLearn
+              Join EDUNOVA
             </h1>
             <p className="text-muted-foreground">
               Create your account and start your learning journey today
@@ -187,7 +187,7 @@ const Signup = () => {
           <CardHeader className="space-y-1 text-center pb-4">
             <CardTitle className="text-2xl">Create account</CardTitle>
             <CardDescription>
-              Enter your details to create your EduLearn account
+              Enter your details to create your EDUNOVA account
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
