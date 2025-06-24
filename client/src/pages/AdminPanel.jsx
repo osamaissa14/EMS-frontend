@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import Layout from "@/components/Layout";
 import {
   Card,
@@ -28,14 +28,19 @@ import {
   PieChart,
   Activity,
 } from "lucide-react";
-import { useUsers, useCourses, usePendingCourses, useApproveCourse } from "@/hooks/useApi";
-
+import { useUsers, useCourses, usePendingCourses, useApproveCourse, useUpdateUserRole, useDeleteUser } from "@/hooks/useApi";
+import UserManagementDialog from "@/components/UserManagementDialog";
 import { useAuth } from '@/context/AuthContext'; // Add this import
 
 const AdminPanel = () => {
   const { user } = useAuth();
   const { data: usersData, isLoading: usersLoading } = useUsers();
   const { data: coursesData, isLoading: coursesLoading } = useCourses();
+  
+  // User management dialog state
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [dialogAction, setDialogAction] = useState(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   
 
   
@@ -103,6 +108,25 @@ const AdminPanel = () => {
     } catch (error) {
       console.error('Error processing course approval:', error);
     }
+  };
+
+  // User management handlers
+  const handleEditUser = (user) => {
+    setSelectedUser(user);
+    setDialogAction('edit');
+    setIsDialogOpen(true);
+  };
+
+  const handleDeleteUser = (user) => {
+    setSelectedUser(user);
+    setDialogAction('delete');
+    setIsDialogOpen(true);
+  };
+
+  const handleCloseDialog = () => {
+    setIsDialogOpen(false);
+    setSelectedUser(null);
+    setDialogAction(null);
   };
 
   if (isLoading) {
@@ -296,10 +320,20 @@ const AdminPanel = () => {
                         </div>
                       </div>
                       <div className="flex gap-1">
-                        <Button size="sm" variant="outline">
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => handleEditUser(user)}
+                          title="Edit user role"
+                        >
                           <Edit className="h-4 w-4" />
                         </Button>
-                        <Button size="sm" variant="outline">
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => handleDeleteUser(user)}
+                          title="Delete user"
+                        >
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
@@ -366,12 +400,12 @@ const AdminPanel = () => {
                       {pendingCourses.map((course) => (
                         <div
                           key={course.id}
-                          className="p-6 border rounded-lg bg-white shadow-sm hover:shadow-md transition-shadow"
+                          className="p-6 border rounded-lg bg-background shadow-sm hover:shadow-md transition-shadow"
                         >
                           <div className="flex items-start justify-between">
                             <div className="flex-1 space-y-3">
                               <div>
-                                <h3 className="text-lg font-semibold text-gray-900">{course.title}</h3>
+                                <h3 className="text-lg font-semibold text-900">{course.title}</h3>
                                 <p className="text-sm text-muted-foreground">
                                   Submitted by <span className="font-medium">{course.instructor_name || 'Unknown Instructor'}</span>
                                 </p>
@@ -546,6 +580,14 @@ const AdminPanel = () => {
           </TabsContent>
         </Tabs>
       </div>
+      
+      {/* User Management Dialog */}
+      <UserManagementDialog
+        user={selectedUser}
+        isOpen={isDialogOpen}
+        onClose={handleCloseDialog}
+        action={dialogAction}
+      />
     </Layout>
   );
 };

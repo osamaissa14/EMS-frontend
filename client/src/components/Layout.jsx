@@ -39,7 +39,14 @@ const Layout = ({
   const navigationItems = [
     {
       name: "Dashboard",
-      href: "/dashboard",
+      href: (role) => {
+        switch(role) {
+          case "student": return "/student/dashboard";
+          case "instructor": return "/instructor/dashboard";
+          case "admin": return "/admin";
+          default: return "/dashboard";
+        }
+      },
       icon: LayoutDashboard,
       roles: ["student", "instructor", "admin"],
     },
@@ -103,11 +110,11 @@ const Layout = ({
         <div className="container flex h-16 items-center justify-between">
           <div className="flex items-center gap-4">
             <Link to="/dashboard" className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                <GraduationCap className="h-5 w-5" />
+              <div className="flex h-8 w-8 items-center justify-center">
+                <img src="/logo.png" alt="EDUNOVA Logo" className="h-12 w-12" />
               </div>
-              <span className="text-xl font-bold bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
-                EduLearn
+              <span className="text-xl font-bold text-amber-500">
+                EDUNOVA
               </span>
             </Link>
           </div>
@@ -187,13 +194,13 @@ const Layout = ({
           <aside className="w-64 border-r bg-slate-900/50 backdrop-blur-sm min-h-[calc(100vh-4rem)]">
             <nav className="flex flex-col gap-2 p-4">
               {visibleItems.map((item) => {
-                const isActive = location.pathname === item.href;
                 const Icon = item.icon;
-
+                const href = typeof item.href === 'function' ? item.href(userRole) : item.href;
+                const isActive = location.pathname === href;
                 return (
                   <Link
-                    key={item.href}
-                    to={item.href}
+                    key={href}
+                    to={href}
                     className={cn(
                       "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
                       isActive

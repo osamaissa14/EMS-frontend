@@ -35,8 +35,12 @@ export const AuthProvider = ({ children }) => {
   
   const { data, isLoading, error } = useQuery({
     queryKey: ["auth"],
-    queryFn: () => authAPI.getProfile().then(res=>res.data.data.user),
-        retry: false,
+    queryFn: async () => {
+      const res = await authAPI.getProfile();
+
+      return res.data.user;
+    },
+    retry: false,
     enabled: hasToken, // Only run if we have a token
     staleTime: 5 * 60 * 1000, // 5 minutes
   });

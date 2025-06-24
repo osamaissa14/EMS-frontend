@@ -64,8 +64,8 @@ const AddCourse = () => {
     const fetchUser = async () => {
       try {
         const response = await authAPI.getProfile();
-        if (response.data.success) {
-          setUser(response.data.data);
+        if (response.success) {
+          setUser(response.data);
         }
       } catch (error) {
         console.error('Error fetching user:', error);
@@ -202,13 +202,13 @@ const AddCourse = () => {
 
       const response = await courseAPI.createCourse(formData);
 
-      if (response.data.success) {
+      if (response.success) {
         navigate('/instructor');
       } else {
-        console.error('Error creating course:', response.data.message);
+        console.error('Error creating course:', response.message);
         // Show validation errors from server if any
-        if (response.data.errors) {
-          setValidationErrors(response.data.errors);
+        if (response.errors) {
+          setValidationErrors(response.errors);
         }
       }
     } catch (error) {
@@ -338,12 +338,12 @@ const AddCourse = () => {
                           <SelectValue placeholder="Select category" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="frontend">Frontend</SelectItem>
-                          <SelectItem value="backend">Backend</SelectItem>
-                          <SelectItem value="devops">DevOps</SelectItem>
+                          <SelectItem value="programming">Programming</SelectItem>
                           <SelectItem value="design">Design</SelectItem>
-                          <SelectItem value="mobile">Mobile</SelectItem>
-                          <SelectItem value="data_science">Data Science</SelectItem>
+                          <SelectItem value="business">Business</SelectItem>
+                          <SelectItem value="marketing">Marketing</SelectItem>
+                          <SelectItem value="data-science">Data Science</SelectItem>
+                          <SelectItem value="other">Other</SelectItem>
                         </SelectContent>
                       </Select>
                       {validationErrors.category && (

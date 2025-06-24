@@ -25,20 +25,44 @@ import {
   Users,
   PlayCircle,
 } from "lucide-react";
-import { useCourses, useEnrollCourse, useEnrolledCourses } from "@/hooks/useApi";
-import { useNavigate } from "react-router-dom";
+import { useApprovedCourses, useEnrollCourse, useEnrolledCourses } from "@/hooks/useApi";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 
 const CourseCatalog = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
-  const { data: coursesData, isLoading } = useCourses();
-  const { data: enrolledCoursesData } = useEnrolledCourses();
+  const { data: coursesData, isLoading, error } = useApprovedCourses();
+  const { data: enrolledCoursesData, isLoading: enrolledLoading } = useEnrolledCourses();
   const enrollCourseMutation = useEnrollCourse();
   
-  const courses = coursesData?.data?.courses || [];
-  const enrolledCourses = enrolledCoursesData?.data || [];
-  const enrolledCourseIds = Array.isArray(enrolledCourses) ? enrolledCourses.map(course => course.id) : [];
+  // Check if we're on the My Courses page
+  const isMyCoursesPage = location.pathname === '/my-courses';
+  
+  const allCourses = Array.isArray(coursesData?.data?.courses) ? coursesData.data.courses : [];
+  const enrolledCourses = Array.isArray(enrolledCoursesData?.data) ? enrolledCoursesData.data : [];
+  // Map enrollment data to course IDs - enrollment data has course_id field
+  const enrolledCourseIds = enrolledCourses.map(enrollment => enrollment.course_id);
+  
+  console.log('Enrolled courses data:', enrolledCourses);
+  console.log('Enrolled course IDs:', enrolledCourseIds);
+  
+  // Show only enrolled courses on My Courses page, all approved courses on catalog page
+  // For My Courses page, we need to transform enrollment data to course-like structure
+  const enrolledCoursesForDisplay = enrolledCourses.map(enrollment => ({
+    id: enrollment.course_id,
+    title: enrollment.course_title,
+    instructor_name: enrollment.instructor_name,
+    level: enrollment.level || 'Beginner',
+    duration: enrollment.duration || 'Self-paced',
+    enrolled_count: enrollment.enrolled_count || 0,
+    progress: enrollment.progress || 0
+  }));
+  
+  const courses = isMyCoursesPage ? enrolledCoursesForDisplay : allCourses;
+  
+
 
   // Categories would need a separate API endpoint
   // For now, we'll comment out the categories section
@@ -63,9 +87,14 @@ const CourseCatalog = () => {
       <div className="space-y-6">
         {/* Header */}
         <div className="space-y-2">
-          <h1 className="text-3xl font-bold">Course Catalog</h1>
+          <h1 className="text-3xl font-bold">
+            {isMyCoursesPage ? 'My Courses' : 'Course Catalog'}
+          </h1>
           <p className="text-muted-foreground">
-            Discover and enroll in courses to advance your skills
+            {isMyCoursesPage 
+              ? 'Continue learning with your enrolled courses'
+              : 'Discover and enroll in courses to advance your skills'
+            }
           </p>
         </div>
 
@@ -124,21 +153,37 @@ const CourseCatalog = () => {
         </Card>
 
         {/* Loading State */}
-        {isLoading && (
+        {(isMyCoursesPage ? enrolledLoading : isLoading) && (
           <div className="flex items-center justify-center py-12">
             <div className="text-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-              <p className="text-muted-foreground">Loading courses...</p>
+              <p className="text-muted-foreground">
+                {isMyCoursesPage ? 'Loading your courses...' : 'Loading courses...'}
+              </p>
             </div>
           </div>
         )}
 
         {/* Course Grid */}
-        {!isLoading && (
+        {!(isMyCoursesPage ? enrolledLoading : isLoading) && (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {courses.length === 0 ? (
               <div className="col-span-full text-center py-12">
-                <p className="text-muted-foreground">No courses available at the moment.</p>
+                <p className="text-muted-foreground">
+                  {isMyCoursesPage 
+                    ? 'You haven\'t enrolled in any courses yet. Visit the course catalog to get started!'
+                    : 'No courses available at the moment.'
+                  }
+                </p>
+                {isMyCoursesPage && (
+                  <Button 
+                    onClick={() => navigate('/courses')} 
+                    className="mt-4"
+                    variant="outline"
+                  >
+                    Browse Course Catalog
+                  </Button>
+                )}
               </div>
             ) : (
               courses.map((course) => (
@@ -178,7 +223,7 @@ const CourseCatalog = () => {
 
                       </div>
                     </div>
-                    {enrolledCourseIds.includes(course.id) ? (
+                    {(isMyCoursesPage || enrolledCourseIds.includes(course.id)) ? (
                       <Button 
                         onClick={() => navigate(`/student/course/${course.id}`)}
                         className="w-full"
@@ -206,12 +251,14 @@ const CourseCatalog = () => {
           </div>
         )}
 
-        {/* Load More */}
-        <div className="text-center">
-          <Button variant="outline" size="lg">
-            Load More Courses
-          </Button>
-        </div>
+        {/* Load More - Only show on course catalog page */}
+        {!isMyCoursesPage && (
+          <div className="text-center">
+            <Button variant="outline" size="lg">
+              Load More Courses
+            </Button>
+          </div>
+        )}
       </div>
     </Layout>
   );

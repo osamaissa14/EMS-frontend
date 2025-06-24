@@ -49,13 +49,48 @@ const OAuthSuccess = () => {
           toast.success('Successfully signed in with Google!');
           
         
-          // Automatically navigate to student dashboard
-
-          
-          // Small delay to ensure AuthContext updates before navigation
-          setTimeout(() => {
-            navigate('/student/dashboard', { replace: true });
-          }, 100);
+          // Fetch user profile to determine role-based navigation
+          try {
+            const response = await fetch('/api/auth/profile', {
+              method: 'GET',
+              credentials: 'include',
+              headers: {
+                'Authorization': `Bearer ${accessToken}`,
+                'Content-Type': 'application/json'
+              }
+            });
+            
+            if (response.ok) {
+              const userData = await response.json();
+              const userRole = userData.data?.user?.role || userData.user?.role;
+              
+              // Navigate based on user role
+              let redirectPath = '/dashboard'; // default
+              if (userRole === 'student') {
+                redirectPath = '/student/dashboard';
+              } else if (userRole === 'instructor') {
+                redirectPath = '/instructor';
+              } else if (userRole === 'admin') {
+                redirectPath = '/admin';
+              }
+              
+              // Small delay to ensure AuthContext updates before navigation
+              setTimeout(() => {
+                navigate(redirectPath, { replace: true });
+              }, 100);
+            } else {
+              // Fallback to default dashboard if profile fetch fails
+              setTimeout(() => {
+                navigate('/dashboard', { replace: true });
+              }, 100);
+            }
+          } catch (profileError) {
+            console.error('Error fetching user profile:', profileError);
+            // Fallback to default dashboard
+            setTimeout(() => {
+              navigate('/dashboard', { replace: true });
+            }, 100);
+          }
         } else {
           console.error('No OAuth tokens found in cookies');
           toast.error('OAuth authentication failed. Please try again.');
@@ -102,10 +137,10 @@ const OAuthSuccess = () => {
         </div>
         <div className="space-y-3">
           <button
-             onClick={() => navigate('/student/dashboard')}
+             onClick={() => navigate('/dashboard')}
              className="w-full px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
            >
-             Go to Student Dashboard
+             Go to Dashboard
            </button>
           <button
             onClick={() => navigate('/')}

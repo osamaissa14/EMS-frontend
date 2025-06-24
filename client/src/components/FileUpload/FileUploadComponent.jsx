@@ -8,7 +8,7 @@ const FileUploadComponent = ({
   onUploadError,
   multiple = false,
   acceptedTypes = [],
-  maxFileSize = 50 * 1024 * 1024, // 50MB
+  maxFileSize = 100 * 1024 * 1024, // 100MB to match Cloudinary video limit
   className = '',
   children,
 }) => {
@@ -44,9 +44,16 @@ const FileUploadComponent = ({
     
     // Check file extension
     const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
-    const isAllowedType = acceptedTypes.length > 0 
-      ? acceptedTypes.includes(fileExtension)
-      : allowedTypes.includes(fileExtension);
+    
+    // If acceptedTypes is provided and not empty, use it; otherwise use allowedTypes from server
+    let isAllowedType = false;
+    if (acceptedTypes.length > 0) {
+      // Use specific accepted types passed as prop
+      isAllowedType = acceptedTypes.includes(fileExtension);
+    } else {
+      // Use server-provided allowed types (fallback to true if not loaded yet)
+      isAllowedType = allowedTypes.length === 0 || allowedTypes.includes(fileExtension);
+    }
     
     if (!isAllowedType) {
       errors.push(`File type ${fileExtension} is not allowed`);
@@ -102,10 +109,10 @@ const FileUploadComponent = ({
         );
       }
       
-      if (response.data.success) {
-        onUploadSuccess?.(response.data.data);
+      if (response.success) {
+        onUploadSuccess?.(response.data);
       } else {
-        throw new Error(response.data.message || 'Upload failed');
+        throw new Error(response.message || 'Upload failed');
       }
     } catch (error) {
       const errorMessage = error.response?.data?.message || error.message || 'Upload failed';

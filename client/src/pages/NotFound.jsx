@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { GraduationCap, ArrowLeft } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 
 const NotFound = () => {
   return (
@@ -8,8 +8,8 @@ const NotFound = () => {
       <div className="text-center space-y-8">
         <div className="space-y-4">
           <div className="flex justify-center">
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg">
-              <GraduationCap className="h-8 w-8" />
+            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-500 text-white shadow-lg">
+              <img src="/logo.png" alt="EDUNOVA Logo" className="h-12 w-12" />
             </div>
           </div>
           <div className="space-y-2">

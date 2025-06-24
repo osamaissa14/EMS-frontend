@@ -1,3 +1,5 @@
+
+
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useLogin,queryKeys } from "@/hooks/useApi";
@@ -13,7 +15,7 @@ import {
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { GraduationCap, Mail, Lock, Eye, EyeOff, Chrome } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, Chrome } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
@@ -90,14 +92,25 @@ const Login = () => {
       setIsLoading(true);
       const response = await loginMutation.mutateAsync(formData);
 
-      // Fix: Use the correct data structure
-      if (!response?.data?.user) {
+      // Fix: Handle the response structure after API interceptor
+      if (!response?.user) {
         throw new Error("Invalid server response");
       }
 
-      // Role-based redirection
+      // Store tokens first
+      localStorage.setItem("accessToken", response.tokens.access);
+      localStorage.setItem("refreshToken", response.tokens.refresh);
       
-
+      // Update auth context
+      queryClient.setQueryData(queryKeys.auth, response.user);
+      queryClient.invalidateQueries({ queryKey: ['auth'] });
+      
+      // Dispatch custom event to notify AuthContext of localStorage changes
+      window.dispatchEvent(new Event('localStorageChange'));
+      
+      toast.success('Login successful!');
+      
+      // Role-based redirection after token storage
       const redirectPaths = {
         admin: "/admin/users",
         instructor: "/instructor",
@@ -105,14 +118,10 @@ const Login = () => {
         default: "/dashboard"
       };
 
-
-      navigate(redirectPaths[response.data.user.role] || redirectPaths.default);
-      
-      localStorage.setItem("accessToken", response.data.tokens.access);
-      localStorage.setItem("refreshToken", response.data.tokens.refresh);
-      queryClient.setQueryData(queryKeys.auth, response.data.user);
-      queryClient.invalidateQueries({ queryKey: ['auth'] });
-      toast.success('Login successful!');
+      // Small delay to ensure AuthContext updates before navigation
+      setTimeout(() => {
+        navigate(redirectPaths[response.user.role] || redirectPaths.default);
+      }, 100);
       
     } catch (error) {
       console.error("Login error:", error);
@@ -137,16 +146,16 @@ const Login = () => {
         {/* Logo and Header */}
         <div className="text-center space-y-4">
           <div className="flex justify-center">
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg">
-              <GraduationCap className="h-8 w-8" aria-hidden="true" />
+            <div className="flex h-16 w-16 items-center justify-center rounded-2xl text-white shadow-lg">
+              <img src="/logo.png" alt="EDUNOVA Logo" className="" />
             </div>
           </div>
           <div className="space-y-2">
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
+            <h1 className="text-3xl font-bold text-amber-500">
               Welcome back
             </h1>
             <p className="text-muted-foreground">
-              Sign in to your EduLearn account to continue learning
+              Sign in to your EDUNOVA account to continue learning
             </p>
           </div>
         </div>
@@ -162,8 +171,7 @@ const Login = () => {
           <CardContent className="space-y-6">
             {/* Google Login Button */}
             <Button
-              variant="outline"
-              className="w-full h-12 text-sm font-medium border-2 hover:bg-slate-800"
+              className="w-full h-12 text-sm font-medium border-0 hover:bg-slate-800"
               onClick={handleGoogleLogin}
               disabled={isLoading}
               aria-label="Continue with Google"
@@ -204,7 +212,7 @@ const Login = () => {
                     placeholder="Enter your email"
                     value={formData.email}
                     onChange={handleChange}
-                    className="pl-10 h-12"
+                    className="pl-10 h-12 border-0"
                     required
                     aria-required="true"
                   />
@@ -233,7 +241,7 @@ const Login = () => {
                     placeholder="Enter your password"
                     value={formData.password}
                     onChange={handleChange}
-                    className="pl-10 pr-10 h-12"
+                    className="pl-10 pr-10 h-12 border-0"
                     required
                     aria-required="true"
                     minLength="8"
